@@ -3,7 +3,7 @@ version: '3.9'
 services:
   rabbitmq:
     image: rabbitmq:3.12-management
-    container_name: rabbitmq
+    container_name: rabbitmq-streaming-example
     ports:
       - "5672:5672"  # AMQP protocol port
       - "15672:15672"  # HTTP management UI
