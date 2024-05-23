@@ -21,7 +21,6 @@ def generate_random_text():
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=20))
 
 def callback(ch, method, properties, body):
-    logger.info("Received requests to process...")
     request = json.loads(body)
     request_id = request['request_id']
     text = request['text']
@@ -29,10 +28,10 @@ def callback(ch, method, properties, body):
     response = {"request_id": request_id, "text": f"You sent me this text: {text}"}
     channel.basic_publish(exchange='', routing_key='response_queue', body=json.dumps(response))
     logger.info(f"Sent initial response to response_queue: {response}")
-    for _ in range(10):
-        response = {"request_id": request_id, "text": generate_random_text()}
+    for word in text.split():
+        response = {"request_id": request_id, "text": word}
         channel.basic_publish(exchange='', routing_key='response_queue', body=json.dumps(response))
-        logger.info(f"Sent random text to response_queue: {response}")
+        logger.info(f"Sent word to response_queue: {response}")
         time.sleep(1)
     ch.basic_ack(delivery_tag=method.delivery_tag)
 

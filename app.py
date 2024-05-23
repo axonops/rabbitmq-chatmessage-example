@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
-# Mount the static files directory
+# Mount the static files directory at /static
 app.mount("/static", StaticFiles(directory="static", html=True), name="static")
 
 # RabbitMQ connection parameters
