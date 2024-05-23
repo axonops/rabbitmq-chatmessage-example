@@ -29,7 +29,7 @@ channel.queue_declare(queue='response_queue', durable=True)
 
 @app.post("/start")
 async def start_stream(text: str = Form(...)):
-    request_id = str(uuid.uuid4())
+    request_id = str(uuid.uuid1())
     message = {"request_id": request_id, "text": text}
     channel.basic_publish(exchange='', routing_key='request_queue', body=json.dumps(message))
     logger.info(f"Sent message to request_queue: {message}")

@@ -25,9 +25,6 @@ def callback(ch, method, properties, body):
     request_id = request['request_id']
     text = request['text']
     logger.info(f"Processing request: {request}")
-    response = {"request_id": request_id, "text": f"You sent me this text: {text}"}
-    channel.basic_publish(exchange='', routing_key='response_queue', body=json.dumps(response))
-    logger.info(f"Sent initial response to response_queue: {response}")
     for word in text.split():
         response = {"request_id": request_id, "text": word}
         channel.basic_publish(exchange='', routing_key='response_queue', body=json.dumps(response))
