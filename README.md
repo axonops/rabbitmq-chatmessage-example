@@ -10,7 +10,7 @@ The Web UI sends a text message to the rest API `/start` and gets back a UUID fo
 `producer.py` is listening on `request_queue`, it gets the text payload, splits the words up and ends them back on `response_queue` for the `/stream/<request_id>` method to consume and return.
 
 ## Running the Example
-* Start RabbitMQ by running the included docker-compose.yml. Ensure RabbitMQ is running.
+* Start RabbitMQ by running the included docker-compose.yml. Ensure RabbitMQ is running. `docker-compose up -d`
 
 
 * Open a terminal to run the RabbitMQ Consumer/Producer:
