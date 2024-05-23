@@ -14,8 +14,8 @@ params = pika.URLParameters(rabbitmq_url)
 connection = pika.BlockingConnection(params)
 channel = connection.channel()
 
-channel.queue_declare(queue='request_queue', durable=True)
-channel.queue_declare(queue='response_queue', durable=True)
+channel.queue_declare(queue='request_queue', durable=True, arguments={'x-message-ttl': 300000})
+channel.queue_declare(queue='response_queue', durable=True, arguments={'x-message-ttl': 300000})
 
 def generate_random_text():
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=20))

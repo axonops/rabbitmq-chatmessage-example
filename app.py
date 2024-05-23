@@ -22,9 +22,9 @@ params = pika.URLParameters(rabbitmq_url)
 connection = pika.BlockingConnection(params)
 channel = connection.channel()
 
-# Declare the queues
-channel.queue_declare(queue='request_queue', durable=True)
-channel.queue_declare(queue='response_queue', durable=True)
+# Declare the queues with TTL
+channel.queue_declare(queue='request_queue', durable=True, arguments={'x-message-ttl': 300000})
+channel.queue_declare(queue='response_queue', durable=True, arguments={'x-message-ttl': 300000})
 
 
 @app.post("/start")

@@ -33,7 +33,7 @@
             eventSource.onmessage = function(event) {
                 if (event.data !== "END") {
                     const streamDiv = document.getElementById('stream');
-                    streamDiv.innerHTML += `<p>${event.data}</p><hr>`; // Add a line break between messages
+                    streamDiv.innerHTML += `<p>${event.data}</p>`;
                 }
             };
             eventSource.onerror = function(event) {
@@ -44,6 +44,8 @@
             };
             eventSource.addEventListener('end', function(event) {
                 console.log("Stream ended");
+                const streamDiv = document.getElementById('stream');
+                streamDiv.innerHTML += `<hr>`; // Add a line break after the stream ends
                 eventSource.close();
                 submitButton.disabled = false; // Re-enable the submit button
                 textInput.readOnly = false; // Make the text input editable again
