@@ -17,7 +17,7 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static", html=True), name="static")
 
 # RabbitMQ connection parameters
-rabbitmq_url = 'amqp://guest:guest@localhost:5672/%2f?heartbeat=5'
+rabbitmq_url = 'amqp://guest:guest@localhost:5672/%2f'
 params = pika.URLParameters(rabbitmq_url)
 connection = pika.BlockingConnection(params)
 channel = connection.channel()

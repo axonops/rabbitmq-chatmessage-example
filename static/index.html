@@ -33,7 +33,8 @@
             eventSource.onmessage = function(event) {
                 if (event.data !== "END") {
                     const streamDiv = document.getElementById('stream');
-                    streamDiv.innerHTML += `<p>${event.data}</p>`;
+                    //streamDiv.innerHTML += `<p>${event.data}</p>`;
+                    streamDiv.innerHTML += `${event.data} `;
                 }
             };
             eventSource.onerror = function(event) {

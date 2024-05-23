@@ -26,7 +26,7 @@ Example application using RabbitMQ and Sockets to stream text to a browser witho
     INFO:     Waiting for application startup.
     INFO:     Application startup complete.
     ```
-* Open the Web Client: Open `index.html` in a web browser, enter some text, and click the "Start Stream" button to see the text stream in action.
+* Open the Web Client: Open `http://localhost:8080/static` in a web browser, enter some text, and click the "Start Stream" button to see the text stream in action!
 
 ### Docker Compose
 The `docker-compose.yml` included in this project starts up RabbitMQ to use in the application. The `rabbitmq.conf` is loaded into the RabbitMQ and can be used to customise RabbitMQ further.
