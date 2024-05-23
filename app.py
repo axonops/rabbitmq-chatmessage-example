@@ -29,7 +29,7 @@ channel.queue_declare(queue='response_queue', durable=True)
 
 @app.post("/start")
 async def start_stream(text: str = Form(...)):
-    request_id = str(uuid.uuid1())
+    request_id = str(uuid.uuid4())
     message = {"request_id": request_id, "text": text}
     channel.basic_publish(exchange='', routing_key='request_queue', body=json.dumps(message))
     logger.info(f"Sent message to request_queue: {message}")
@@ -47,6 +47,9 @@ async def stream_response(request_id: str):
                     logger.info(f"Received message from response_queue: {response}")
                     yield f"data: {response['text']}\n\n"
                     channel.basic_ack(method_frame.delivery_tag)
+                    if response['text'] == "END":
+                        yield f"event: end\ndata: Stream ended\n\n"
+                        break
             await asyncio.sleep(1)
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")

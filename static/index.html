@@ -7,13 +7,16 @@
     <h1>Text Stream</h1>
     <form id="textForm">
         <input type="text" id="textInput" name="text" placeholder="Enter some text" required>
-        <button type="submit">Start Stream</button>
+        <button type="submit" id="submitButton">Start Stream</button>
     </form>
     <div id="stream"></div>
 
     <script>
         document.getElementById('textForm').addEventListener('submit', async function(event) {
             event.preventDefault();
+            const submitButton = document.getElementById('submitButton');
+            submitButton.disabled = true; // Disable the submit button
+
             const text = document.getElementById('textInput').value;
             const formData = new FormData();
             formData.append('text', text);
@@ -32,7 +35,16 @@
             eventSource.onerror = function(event) {
                 console.error("EventSource failed:", event);
                 eventSource.close();
+                submitButton.disabled = false; // Re-enable the submit button
             };
+            eventSource.onopen = function(event) {
+                console.log("Connection opened");
+            };
+            eventSource.addEventListener('end', function(event) {
+                console.log("Stream ended");
+                eventSource.close();
+                submitButton.disabled = false; // Re-enable the submit button
+            });
         });
     </script>
 </body>

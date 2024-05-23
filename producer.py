@@ -30,6 +30,9 @@ def callback(ch, method, properties, body):
         channel.basic_publish(exchange='', routing_key='response_queue', body=json.dumps(response))
         logger.info(f"Sent word to response_queue: {response}")
         time.sleep(1)
+    # Send an "END" message to signal the end of the stream
+    end_message = {"request_id": request_id, "text": "END"}
+    channel.basic_publish(exchange='', routing_key='response_queue', body=json.dumps(end_message))
     ch.basic_ack(delivery_tag=method.delivery_tag)
 
 channel.basic_consume(queue='request_queue', on_message_callback=callback)
