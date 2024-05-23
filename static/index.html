@@ -15,9 +15,11 @@
         document.getElementById('textForm').addEventListener('submit', async function(event) {
             event.preventDefault();
             const submitButton = document.getElementById('submitButton');
+            const textInput = document.getElementById('textInput');
             submitButton.disabled = true; // Disable the submit button
+            textInput.readOnly = true; // Make the text input read-only
 
-            const text = document.getElementById('textInput').value;
+            const text = textInput.value;
             const formData = new FormData();
             formData.append('text', text);
 
@@ -29,21 +31,23 @@
             const requestId = data.request_id;
             const eventSource = new EventSource(`/stream/${requestId}`);
             eventSource.onmessage = function(event) {
-                const streamDiv = document.getElementById('stream');
-                streamDiv.innerHTML += `<p>${event.data}</p>`;
+                if (event.data !== "END") {
+                    const streamDiv = document.getElementById('stream');
+                    streamDiv.innerHTML += `<p>${event.data}</p><hr>`; // Add a line break between messages
+                }
             };
             eventSource.onerror = function(event) {
                 console.error("EventSource failed:", event);
                 eventSource.close();
                 submitButton.disabled = false; // Re-enable the submit button
-            };
-            eventSource.onopen = function(event) {
-                console.log("Connection opened");
+                textInput.readOnly = false; // Make the text input editable again
             };
             eventSource.addEventListener('end', function(event) {
                 console.log("Stream ended");
                 eventSource.close();
                 submitButton.disabled = false; // Re-enable the submit button
+                textInput.readOnly = false; // Make the text input editable again
+                textInput.value = ""; // Clear the text input
             });
         });
     </script>
