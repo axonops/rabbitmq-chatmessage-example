@@ -50,6 +50,6 @@ async def stream_response(request_id: str):
                     if response['text'] == "END":
                         yield f"event: end\ndata: Stream ended\n\n"
                         break
-            await asyncio.sleep(1)
+            await asyncio.sleep(0.1)
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
