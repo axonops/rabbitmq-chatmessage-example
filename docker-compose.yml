@@ -1,0 +1,24 @@
+version: '3.9'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"  # AMQP protocol port
+      - "15672:15672"  # HTTP management UI
+      - "5552:5552"  # Stream protocol port
+    environment:
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbitmq_stream advertised_host localhost"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+    command: >
+      sh -c "
+        rabbitmq-plugins enable --offline rabbitmq_management &&
+        rabbitmq-plugins enable --offline rabbitmq_stream &&
+        rabbitmq-server
+      "
+
+volumes:
+  rabbitmq_data:
