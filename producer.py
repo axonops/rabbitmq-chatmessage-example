@@ -9,7 +9,8 @@ import string
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-rabbitmq_url = 'amqp://guest:guest@localhost:5672/%2f'
+rabbitmq_url = 'amqp://guest:guest@localhost:5672/%2f?heartbeat=5'
+
 params = pika.URLParameters(rabbitmq_url)
 connection = pika.BlockingConnection(params)
 channel = connection.channel()
