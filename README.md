@@ -1,13 +1,15 @@
 # rabbitmq-streaming-example
-Example application using RabbitMQ Stream Plugin (https://www.rabbitmq.com/docs/stream) to stream text to a browser via a FastAPI server, without the browser having direct access to RabbitMQ. This is just basic proof of concept, exploring the Streams feature in RabbitMQ. Further thought should be given to concurrent requests and how they should be handled.
+Example application using RabbitMQ Stream Plugin (https://www.rabbitmq.com/docs/stream) to stream text to a browser via a FastAPI server, without the browser having direct access to RabbitMQ.
+
+This is just basic proof of concept, exploring the Streams feature in RabbitMQ. Further thought should be given to concurrent requests and how they should be handled. In the case of this application we are creating a unique response queue for each requests that gets automatically deleted after 10 minutes by RabbitMQ.
 
 A Python Rest API using FastAPI app (`app.py`) is exposed for a simple static webpage `static/index.html` to invoke.
 
 The Web UI sends a text message to the rest API `/start` and gets back a UUID for its individual response. It then creates an `EventSource` on `/stream/<request_id>` to listen for incoming text messages. It then outputs them in the webpage.
 
-`app.py` after getting a request to `/start` sends the text onto a queue in RabbitMQ `request_queue` and then returns a UUID to the caller. 
+`app.py` after getting a request to `/start` sends the text onto a queue in RabbitMQ `requests_queue` and then returns a UUID to the caller. It also creates a unique queue for the request `response_queue_{UUID}` with a queue expiry of 10 minutes. After 10 minutes this queue is automatically deleted by RabbitMQ.
 
-`producer.py` is listening on `request_queue`, it gets the text payload, splits the words up and ends them back on `response_queue` for the `/stream/<request_id>` method to consume and return.
+`producer.py` is listening on `request_queue`, it gets the text payload, splits the words up and ends them back on `response_queue_{UUID}` for the `/stream/<request_id>` method to consume and return.
 
 ## Running the Example
 * Start RabbitMQ by running the included docker-compose.yml. Ensure RabbitMQ is running. `docker-compose up -d`
