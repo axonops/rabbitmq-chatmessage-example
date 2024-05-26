@@ -28,7 +28,7 @@ def create_response_queue(request_id: str):
         channel = connection.channel()
 
         # Generate a unique queue name using UUID
-        response_queue_name = generate_request_queue_name(request_id)
+        response_queue_name = generate_response_queue_name(request_id)
 
         channel.queue_declare(queue=response_queue_name, durable=True, auto_delete=True,
                               arguments={'x-expires': 600000})
@@ -45,7 +45,7 @@ def create_response_queue(request_id: str):
         raise HTTPException(status_code=500, detail=f"A problem has been encountered servicing request {request_id}")
 
 
-def generate_request_queue_name(request_id: str):
+def generate_response_queue_name(request_id: str):
     return f'response_queue_{request_id}'
 
 def send_message_to_request_queue(request_id: str, message):
@@ -53,7 +53,7 @@ def send_message_to_request_queue(request_id: str, message):
         connection = pika.BlockingConnection(params)
         channel = connection.channel()
 
-        channel.queue_declare(queue=request_queue_name, durable=True, arguments={'x-expires': 300000})
+        channel.queue_declare(queue=request_queue_name, durable=True, arguments={'x-message-ttl': 300000})
 
         logger.info(f"Declared queue {request_queue_name} with message TTL of 5 minute")
 
@@ -74,7 +74,7 @@ def create_requests_queue():
         connection = pika.BlockingConnection(params)
         channel = connection.channel()
 
-        channel.queue_declare(queue=request_queue_name, durable=True, arguments={'x-expires': 300000})
+        channel.queue_declare(queue=request_queue_name, durable=True, arguments={'x-message-ttl': 300000})
 
         logger.info(f"Declared queue {request_queue_name} with message TTL of 5 minute")
 
@@ -111,7 +111,7 @@ async def stream_response(request_id: str):
             logger.error(f"Failed to connect to RabbitMQ  @ {rabbitmq_url}: {e}")
             raise HTTPException(status_code=503, detail="Service Unavailable: Unable to connect to RabbitMQ")
 
-        response_queue_name = generate_request_queue_name(request_id)
+        response_queue_name = generate_response_queue_name(request_id)
 
         logger.info(f"Starting listening on response_queue: {response_queue_name} for request_id {request_id}")
 

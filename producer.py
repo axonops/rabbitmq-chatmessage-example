@@ -20,7 +20,7 @@ try:
     connection = pika.BlockingConnection(params)
     channel = connection.channel()
 
-    channel.queue_declare(queue=request_queue_name, durable=True, arguments={'x-expires': 300000})
+    channel.queue_declare(queue=request_queue_name, durable=True, arguments={'x-message-ttl': 300000})
 
     logger.info(f"Declared queue {request_queue_name} with message TTL of 5 minute")
 
