@@ -52,4 +52,3 @@ To start the services defined in the `docker-compose.yml` file, run the followin
 The following ports are exposed on localhost
 * `5672:5672` for the AMQP protocol.
 * `15672:15672` for the management UI.
-* `5552:5552` for the Stream protocol.
