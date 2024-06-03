@@ -1,4 +1,4 @@
-# rabbitmq-streaming-example
+# rabbitmq-chatmessage-example
 Example application using RabbitMQ to stream text to a browser via a FastAPI server, without the browser having direct access to RabbitMQ. Note - this is not using the streams plugin, it just creates a temporary queue for each message and produces and consumes from it on word at a time.
 
 This is just basic proof of concept, exploring RabbitMQ. Further thought should be given to concurrent requests and how they should be handled. In the case of this application we are creating a unique response queue for each requests that gets automatically deleted after 10 minutes by RabbitMQ.
