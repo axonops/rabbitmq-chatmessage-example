@@ -41,13 +41,13 @@ The web UI then creates a stream on `/stream/{chat_id}/{message_id}` which consu
   INFO:     Application startup complete.
   ```
 
-* Open the Web Client: Open `http://localhost:8080/static` in a web browser, enter some text, and click the "Start Stream" button to see the text stream in action!
+* Open the Web Client: Open `http://localhost:8080/static` in a web browser and send a message to see the text stream in action!
 
 ### Docker Compose
 The `docker-compose.yml` included in this project starts up RabbitMQ to use in the application. The `rabbitmq.conf` is loaded into the RabbitMQ and can be used to customise RabbitMQ further.
 
 To start the services defined in the `docker-compose.yml` file, run the following command in your terminal:
-`docker-compose up -d`. This command will start the RabbitMQ container with the Streams feature enabled and run it in detached mode.
+`docker-compose up -d`. This command will start the RabbitMQ container and run it in detached mode.
 
 The following ports are exposed on localhost
 * `5672:5672` for the AMQP protocol.
