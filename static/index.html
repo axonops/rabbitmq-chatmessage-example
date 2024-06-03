@@ -1,58 +1,272 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Text Stream</title>
+    <meta charset="UTF-8">
+    <title>Chat Application</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: black;
+            color: white;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        #chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+        }
+        #messages {
+            flex: 1;
+            padding: 10px;
+            overflow-y: scroll;
+        }
+        .message {
+            margin: 10px 0;
+        }
+        .question {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .response {
+            font-size: 16px;
+            font-weight: normal;
+            background-color: #404040; /* Darker Grey */
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+        #input-container {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-top: 1px solid #444;
+        }
+        #message-input {
+            flex: 1;
+            padding: 10px;
+            font-size: 16px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        #send-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: white;
+            font-size: 24px;
+        }
+        #send-button:disabled {
+            color: #555;
+            cursor: not-allowed;
+        }
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .modal-content {
+            background-color: #333;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            color: white;
+            border-radius: 10px;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: #fff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .modal textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            background-color: #444;
+            color: white;
+            resize: vertical;
+        }
+        .modal button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 24px;
+        }
+        .modal button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+    </style>
 </head>
 <body>
-    <h1>Text Stream</h1>
-    <form id="textForm">
-        <input type="text" id="textInput" name="text" placeholder="Enter some text" required>
-        <button type="submit" id="submitButton">Start Stream</button>
-    </form>
-    <div id="stream"></div>
+    <div id="chat-container">
+        <div id="messages"></div>
+        <div id="input-container">
+            <input type="hidden" id="chat-id">
+            <input type="hidden" id="chat-title" name="chat_title">
+            <input type="text" id="message-input" placeholder="Type your message here..." disabled>
+            <button id="send-button" disabled>&#10148;</button> <!-- Unicode for arrow -->
+        </div>
+    </div>
+
+    <!-- Modal Structure -->
+    <div id="initialQuestionModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeModal">&times;</span>
+            <h2>Start a New Chat</h2>
+            <textarea id="initialQuestionInput" rows="4" placeholder="Enter your initial question"></textarea>
+            <button id="startChatButton" disabled>&#10148;</button> <!-- Unicode for arrow -->
+        </div>
+    </div>
 
     <script>
-        document.getElementById('textForm').addEventListener('submit', async function(event) {
-            event.preventDefault();
-            const submitButton = document.getElementById('submitButton');
-            const textInput = document.getElementById('textInput');
-            submitButton.disabled = true; // Disable the submit button
-            textInput.readOnly = true; // Make the text input read-only
+        // Show the modal on page load
+        window.onload = () => {
+            const modal = document.getElementById('initialQuestionModal');
+            modal.style.display = 'block';
 
-            const text = textInput.value;
+            // Enable/disable the start chat button based on input value
+            const initialQuestionInput = document.getElementById('initialQuestionInput');
+            const startChatButton = document.getElementById('startChatButton');
+            initialQuestionInput.addEventListener('input', () => {
+                startChatButton.disabled = initialQuestionInput.value.trim() === '';
+            });
+
+            // Close the modal when the close button is clicked
+            document.getElementById('closeModal').onclick = () => {
+                modal.style.display = 'none';
+            };
+
+            // Start the chat when the start chat button is clicked
+            startChatButton.onclick = async () => {
+                const initialQuestion = initialQuestionInput.value.trim();
+                if (initialQuestion) {
+                    const response = await fetch('/start', { method: 'POST' });
+                    const data = await response.json();
+                    document.getElementById('chat-id').value = data.chat_id;
+                    document.getElementById('messages').innerHTML = '';
+                    document.getElementById('message-input').disabled = false;
+                    document.getElementById('send-button').disabled = true; // Initially disable the send button
+
+                    // Add event listener to enable/disable send button based on input value
+                    document.getElementById('message-input').addEventListener('input', () => {
+                        const messageInput = document.getElementById('message-input');
+                        document.getElementById('send-button').disabled = messageInput.value.trim() === '';
+                    });
+
+                    // Send the initial question
+                    const chatId = document.getElementById('chat-id').value;
+                    const formData = new FormData();
+                    formData.append('text', initialQuestion);
+                    formData.append('chat_title', 'New Chat'); // Initial chat title
+
+                    const responseStart = await fetch(`/start/${chatId}`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const dataStart = await responseStart.json();
+                    const messageId = dataStart.message_id;
+
+                    // Display the question in the chat area
+                    const messagesDiv = document.getElementById('messages');
+                    const questionElement = document.createElement('div');
+                    questionElement.className = 'message question';
+                    questionElement.innerText = initialQuestion;
+                    messagesDiv.appendChild(questionElement);
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+                    startStream(chatId, messageId, questionElement);
+
+                    // Close the modal
+                    modal.style.display = 'none';
+                }
+            };
+        };
+
+        document.getElementById('send-button').addEventListener('click', async () => {
+            const chatId = document.getElementById('chat-id').value;
+            const messageInput = document.getElementById('message-input');
+            const text = messageInput.value;
             const formData = new FormData();
             formData.append('text', text);
+            formData.append('chat_title', document.getElementById('chat-title').value);
 
-            const response = await fetch('/start', {
+            const response = await fetch(`/start/${chatId}`, {
                 method: 'POST',
                 body: formData
             });
             const data = await response.json();
-            const requestId = data.request_id;
-            const eventSource = new EventSource(`/stream/${requestId}`);
-            eventSource.onmessage = function(event) {
-                if (event.data !== "END") {
-                    const streamDiv = document.getElementById('stream');
-                    //streamDiv.innerHTML += `<p>${event.data}</p>`;
-                    streamDiv.innerHTML += `${event.data} `;
-                }
-            };
-            eventSource.onerror = function(event) {
-                console.error("EventSource failed:", event);
-                eventSource.close();
-                submitButton.disabled = false; // Re-enable the submit button
-                textInput.readOnly = false; // Make the text input editable again
-            };
-            eventSource.addEventListener('end', function(event) {
-                console.log("Stream ended");
-                const streamDiv = document.getElementById('stream');
-                streamDiv.innerHTML += `<hr>`; // Add a line break after the stream ends
-                eventSource.close();
-                submitButton.disabled = false; // Re-enable the submit button
-                textInput.readOnly = false; // Make the text input editable again
-                textInput.value = ""; // Clear the text input
-            });
+            const messageId = data.message_id;
+
+            // Display the question in the chat area
+            const messagesDiv = document.getElementById('messages');
+            const questionElement = document.createElement('div');
+            questionElement.className = 'message question';
+            questionElement.innerText = text;
+            messagesDiv.appendChild(questionElement);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+            messageInput.value = '';
+            document.getElementById('send-button').disabled = true; // Disable send button after sending message
+            startStream(chatId, messageId, questionElement);
         });
+
+        async function startStream(chatId, messageId, questionElement) {
+            const eventSource = new EventSource(`/stream/${chatId}/${messageId}`);
+            let responseElement = null;
+
+            eventSource.onmessage = function(event) {
+                const messageData = JSON.parse(event.data);
+                if (messageData.text.trim() === "^*END*^") {
+                    eventSource.close();
+                    return;
+                }
+
+                const messagesDiv = document.getElementById('messages');
+                if (!responseElement) {
+                    responseElement = document.createElement('div');
+                    responseElement.className = 'message response';
+                    questionElement.appendChild(responseElement);
+                }
+                responseElement.innerHTML += messageData.text + '&nbsp;';
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+                // Set the chat title after the first response
+                document.getElementById('chat-title').value = messageData.chat_title;
+            };
+
+            eventSource.onerror = function() {
+                eventSource.close();
+            };
+        }
     </script>
 </body>
 </html>
