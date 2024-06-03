@@ -20,11 +20,6 @@
             height: 100%;
             width: 100%;
         }
-        #chat-title {
-            font-size: 24px;
-            margin: 10px;
-            text-align: center;
-        }
         #messages {
             flex: 1;
             padding: 10px;
@@ -34,11 +29,15 @@
             margin: 10px 0;
         }
         .question {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
         }
         .response {
             font-size: 16px;
+            font-weight: normal;
+            background-color: #404040; /* Darker Grey */
+            padding: 10px;
+            border-radius: 5px;
             margin-top: 5px;
         }
         #input-container {
@@ -127,10 +126,10 @@
 </head>
 <body>
     <div id="chat-container">
-        <div id="chat-title">Chat Application</div>
         <div id="messages"></div>
         <div id="input-container">
             <input type="hidden" id="chat-id">
+            <input type="hidden" id="chat-title" name="chat_title">
             <input type="text" id="message-input" placeholder="Type your message here..." disabled>
             <button id="send-button" disabled>&#10148;</button> <!-- Unicode for arrow -->
         </div>
@@ -171,7 +170,7 @@
                     const response = await fetch('/start', { method: 'POST' });
                     const data = await response.json();
                     document.getElementById('chat-id').value = data.chat_id;
-                    document.getElementById('chat-title').innerText = data.chat_title;
+                    document.getElementById('chat-title').value = data.chat_title;
                     document.getElementById('messages').innerHTML = '';
                     document.getElementById('message-input').disabled = false;
                     document.getElementById('send-button').disabled = true; // Initially disable the send button
@@ -186,7 +185,7 @@
                     const chatId = document.getElementById('chat-id').value;
                     const formData = new FormData();
                     formData.append('text', initialQuestion);
-                    formData.append('chat_title', document.getElementById('chat-title').innerText);
+                    formData.append('chat_title', document.getElementById('chat-title').value);
 
                     const responseStart = await fetch(`/start/${chatId}`, {
                         method: 'POST',
@@ -194,9 +193,6 @@
                     });
                     const dataStart = await responseStart.json();
                     const messageId = dataStart.message_id;
-
-                    // Update the chat title if it has changed
-                    document.getElementById('chat-title').innerText = dataStart.chat_title;
 
                     // Display the question in the chat area
                     const messagesDiv = document.getElementById('messages');
@@ -220,7 +216,7 @@
             const text = messageInput.value;
             const formData = new FormData();
             formData.append('text', text);
-            formData.append('chat_title', document.getElementById('chat-title').innerText);
+            formData.append('chat_title', document.getElementById('chat-title').value);
 
             const response = await fetch(`/start/${chatId}`, {
                 method: 'POST',
@@ -228,9 +224,6 @@
             });
             const data = await response.json();
             const messageId = data.message_id;
-
-            // Update the chat title if it has changed
-            document.getElementById('chat-title').innerText = data.chat_title;
 
             // Display the question in the chat area
             const messagesDiv = document.getElementById('messages');
