@@ -1,58 +1,89 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Text Stream</title>
+    <meta charset="UTF-8">
+    <title>Chat Application</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        #chat-container {
+            width: 50%;
+            margin: 0 auto;
+        }
+        #chat-title {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        #messages {
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 300px;
+            overflow-y: scroll;
+            margin-bottom: 10px;
+        }
+        #message-input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        #send-button {
+            padding: 10px 20px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Text Stream</h1>
-    <form id="textForm">
-        <input type="text" id="textInput" name="text" placeholder="Enter some text" required>
-        <button type="submit" id="submitButton">Start Stream</button>
-    </form>
-    <div id="stream"></div>
+    <div id="chat-container">
+        <button id="new-chat-button">New Chat</button>
+        <div id="chat-title"></div>
+        <div id="messages"></div>
+        <input type="hidden" id="chat-id">
+        <input type="text" id="message-input" placeholder="Type your message here...">
+        <button id="send-button">Send</button>
+    </div>
 
     <script>
-        document.getElementById('textForm').addEventListener('submit', async function(event) {
-            event.preventDefault();
-            const submitButton = document.getElementById('submitButton');
-            const textInput = document.getElementById('textInput');
-            submitButton.disabled = true; // Disable the submit button
-            textInput.readOnly = true; // Make the text input read-only
+        document.getElementById('new-chat-button').addEventListener('click', async () => {
+            const response = await fetch('/start', { method: 'POST' });
+            const data = await response.json();
+            document.getElementById('chat-id').value = data.chat_id;
+            document.getElementById('chat-title').innerText = data.chat_title;
+            document.getElementById('messages').innerHTML = '';
+        });
 
-            const text = textInput.value;
+        document.getElementById('send-button').addEventListener('click', async () => {
+            const chatId = document.getElementById('chat-id').value;
+            const messageInput = document.getElementById('message-input');
+            const text = messageInput.value;
             const formData = new FormData();
             formData.append('text', text);
+            formData.append('chat_title', document.getElementById('chat-title').innerText);
 
-            const response = await fetch('/start', {
+            const response = await fetch(`/start/${chatId}`, {
                 method: 'POST',
                 body: formData
             });
             const data = await response.json();
-            const requestId = data.request_id;
-            const eventSource = new EventSource(`/stream/${requestId}`);
-            eventSource.onmessage = function(event) {
-                if (event.data !== "END") {
-                    const streamDiv = document.getElementById('stream');
-                    //streamDiv.innerHTML += `<p>${event.data}</p>`;
-                    streamDiv.innerHTML += `${event.data} `;
-                }
-            };
-            eventSource.onerror = function(event) {
-                console.error("EventSource failed:", event);
-                eventSource.close();
-                submitButton.disabled = false; // Re-enable the submit button
-                textInput.readOnly = false; // Make the text input editable again
-            };
-            eventSource.addEventListener('end', function(event) {
-                console.log("Stream ended");
-                const streamDiv = document.getElementById('stream');
-                streamDiv.innerHTML += `<hr>`; // Add a line break after the stream ends
-                eventSource.close();
-                submitButton.disabled = false; // Re-enable the submit button
-                textInput.readOnly = false; // Make the text input editable again
-                textInput.value = ""; // Clear the text input
-            });
+            const messageId = data.message_id;
+
+            messageInput.value = '';
+            startStream(chatId, messageId);
         });
+
+        async function startStream(chatId, messageId) {
+            const eventSource = new EventSource(`/stream/${chatId}/${messageId}`);
+            eventSource.onmessage = function(event) {
+                const messageData = JSON.parse(event.data);
+                const messagesDiv = document.getElementById('messages');
+                const messageElement = document.createElement('div');
+                messageElement.innerText = messageData.text;
+                messagesDiv.appendChild(messageElement);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            };
+            eventSource.onerror = function() {
+                eventSource.close();
+            };
+        }
     </script>
 </body>
 </html>
