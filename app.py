@@ -135,7 +135,7 @@ async def stream_response(chat_id: str, message_id: str):
                         logger.info(f"Received message from response_queue: {response}")
                         yield f"data: {json.dumps(response)}\n\n"
                         channel.basic_ack(method_frame.delivery_tag)
-                        if response['text'] == "END":
+                        if response['text'] == "^*END*^":
                             logger.info(f"Received end of stream message from response_queue: {response_queue_name}. Closing connection")
                             connection.close()
                             yield f"event: end\ndata: Stream ended\n\n"

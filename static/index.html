@@ -10,6 +10,8 @@
         #chat-container {
             width: 50%;
             margin: 0 auto;
+            display: flex;
+            flex-direction: column;
         }
         #chat-title {
             font-size: 24px;
@@ -21,6 +23,25 @@
             height: 300px;
             overflow-y: scroll;
             margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+        .message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+        .question {
+            background-color: #e0e0e0;
+            color: #000;
+            align-self: flex-start;
+        }
+        .response {
+            background-color: #4CAF50;
+            color: #fff;
+            align-self: flex-end;
         }
         #message-input {
             width: 100%;
@@ -30,6 +51,10 @@
         #send-button {
             padding: 10px 20px;
         }
+        #send-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -38,8 +63,8 @@
         <div id="chat-title"></div>
         <div id="messages"></div>
         <input type="hidden" id="chat-id">
-        <input type="text" id="message-input" placeholder="Type your message here...">
-        <button id="send-button">Send</button>
+        <input type="text" id="message-input" placeholder="Type your message here..." disabled>
+        <button id="send-button" disabled>Send</button>
     </div>
 
     <script>
@@ -49,6 +74,14 @@
             document.getElementById('chat-id').value = data.chat_id;
             document.getElementById('chat-title').innerText = data.chat_title;
             document.getElementById('messages').innerHTML = '';
+            document.getElementById('message-input').disabled = false;
+            document.getElementById('send-button').disabled = true; // Initially disable the send button
+
+            // Add event listener to enable/disable send button based on input value
+            document.getElementById('message-input').addEventListener('input', () => {
+                const messageInput = document.getElementById('message-input');
+                document.getElementById('send-button').disabled = messageInput.value.trim() === '';
+            });
         });
 
         document.getElementById('send-button').addEventListener('click', async () => {
@@ -66,20 +99,40 @@
             const data = await response.json();
             const messageId = data.message_id;
 
+            // Display the question in the chat area
+            const messagesDiv = document.getElementById('messages');
+            const questionElement = document.createElement('div');
+            questionElement.className = 'message question';
+            questionElement.innerText = text;
+            messagesDiv.appendChild(questionElement);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
             messageInput.value = '';
+            document.getElementById('send-button').disabled = true; // Disable send button after sending message
             startStream(chatId, messageId);
         });
 
         async function startStream(chatId, messageId) {
             const eventSource = new EventSource(`/stream/${chatId}/${messageId}`);
+            let responseElement = null;
+
             eventSource.onmessage = function(event) {
                 const messageData = JSON.parse(event.data);
+                if (messageData.text.trim() === "^*END*^") {
+                    eventSource.close();
+                    return;
+                }
+
                 const messagesDiv = document.getElementById('messages');
-                const messageElement = document.createElement('div');
-                messageElement.innerText = messageData.text;
-                messagesDiv.appendChild(messageElement);
+                if (!responseElement) {
+                    responseElement = document.createElement('div');
+                    responseElement.className = 'message response';
+                    messagesDiv.appendChild(responseElement);
+                }
+                responseElement.innerHTML += messageData.text + '&nbsp;';
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
             };
+
             eventSource.onerror = function() {
                 eventSource.close();
             };

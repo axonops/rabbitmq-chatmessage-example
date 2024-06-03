@@ -42,7 +42,8 @@ def callback(ch, method, properties, body):
     channel.queue_declare(queue=response_queue_name, durable=True, auto_delete=True,
                           arguments={'x-expires': 600000})
 
-    text = request['text']
+    original_text = request['text']
+    text = "This is generated on the server side. Here is your original message: " + original_text
     logger.info(f"Processing request: {request}")
     for word in text.split():
         response = {"chat_id": chat_id, "chat_title": chat_title, "message_id": message_id, "text": word}
