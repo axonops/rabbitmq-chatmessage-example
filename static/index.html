@@ -99,6 +99,9 @@
             const data = await response.json();
             const messageId = data.message_id;
 
+            // Update the chat title if it has changed
+            document.getElementById('chat-title').innerText = data.chat_title;
+
             // Display the question in the chat area
             const messagesDiv = document.getElementById('messages');
             const questionElement = document.createElement('div');
