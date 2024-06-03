@@ -1,15 +1,17 @@
 # rabbitmq-streaming-example
-Example application using RabbitMQ to stream text to a browser via a FastAPI server, without the browser having direct access to RabbitMQ.
+Example application using RabbitMQ to stream text to a browser via a FastAPI server, without the browser having direct access to RabbitMQ. Note - this is not using the streams plugin, it just creates a temporary queue for each message and produces and consumes from it on word at a time.
 
 This is just basic proof of concept, exploring RabbitMQ. Further thought should be given to concurrent requests and how they should be handled. In the case of this application we are creating a unique response queue for each requests that gets automatically deleted after 10 minutes by RabbitMQ.
 
 A Python Rest API using FastAPI app (`app.py`) is exposed for a simple static webpage `static/index.html` to invoke.
 
-The Web UI sends a text message to the rest API `/start` and gets back a UUID for its individual response. It then creates an `EventSource` on `/stream/<request_id>` to listen for incoming text messages. It then outputs them in the webpage.
+The Web UI sends a text message to the rest API `/start` and gets back a UUID for its chat id (`chat_id`) and a generated chat title (`chat_title`). 
 
-`app.py` after getting a request to `/start` sends the text onto a queue in RabbitMQ `requests_queue` and then returns a UUID to the caller. It also creates a unique queue for the request `response_queue_{UUID}` with a queue expiry of 10 minutes. After 10 minutes this queue is automatically deleted by RabbitMQ.
+It then makes a call to `"/start/{chat_id}` with its message to send. It generates a UUID `message_id` and sends a message containing the information to the `requests_queue`
 
-`producer.py` is listening on `request_queue`, it gets the text payload, splits the words up and ends them back on `response_queue_{UUID}` for the `/stream/<request_id>` method to consume and return.
+The web UI then creates a stream on `/stream/{chat_id}/{message_id}` which consumes messages as they come in on the unique queue creates for the message.
+
+`producer.py` is listening on `request_queue`, it gets the text payload, splits the words up and ends them back on `response_queue_{message_id}` for the `/stream/{chat_id}/{message_id}` method to consume and return.
 
 ## Running the Example
 * Start RabbitMQ by running the included docker-compose.yml. Ensure RabbitMQ is running. `docker-compose up -d`
