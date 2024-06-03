@@ -101,7 +101,7 @@
             text-decoration: none;
             cursor: pointer;
         }
-        .modal input[type="text"] {
+        .modal textarea {
             width: 100%;
             padding: 10px;
             margin: 10px 0;
@@ -109,6 +109,7 @@
             border-radius: 5px;
             background-color: #444;
             color: white;
+            resize: vertical;
         }
         .modal button {
             padding: 10px 20px;
@@ -117,6 +118,7 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 24px;
         }
         .modal button:disabled {
             background-color: #555;
@@ -140,8 +142,8 @@
         <div class="modal-content">
             <span class="close" id="closeModal">&times;</span>
             <h2>Start a New Chat</h2>
-            <input type="text" id="initialQuestionInput" placeholder="Enter your initial question">
-            <button id="startChatButton" disabled>Start Chat</button>
+            <textarea id="initialQuestionInput" rows="4" placeholder="Enter your initial question"></textarea>
+            <button id="startChatButton" disabled>&#10148;</button> <!-- Unicode for arrow -->
         </div>
     </div>
 
@@ -170,7 +172,6 @@
                     const response = await fetch('/start', { method: 'POST' });
                     const data = await response.json();
                     document.getElementById('chat-id').value = data.chat_id;
-                    document.getElementById('chat-title').value = data.chat_title;
                     document.getElementById('messages').innerHTML = '';
                     document.getElementById('message-input').disabled = false;
                     document.getElementById('send-button').disabled = true; // Initially disable the send button
@@ -185,7 +186,7 @@
                     const chatId = document.getElementById('chat-id').value;
                     const formData = new FormData();
                     formData.append('text', initialQuestion);
-                    formData.append('chat_title', document.getElementById('chat-title').value);
+                    formData.append('chat_title', 'New Chat'); // Initial chat title
 
                     const responseStart = await fetch(`/start/${chatId}`, {
                         method: 'POST',
@@ -257,6 +258,9 @@
                 }
                 responseElement.innerHTML += messageData.text + '&nbsp;';
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+                // Set the chat title after the first response
+                document.getElementById('chat-title').value = messageData.chat_title;
             };
 
             eventSource.onerror = function() {

@@ -9,6 +9,11 @@ import json
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+# Get the logger for the pika package and set its level to WARNING
+pika_logger = logging.getLogger('pika')
+pika_logger.setLevel(logging.WARNING)
+
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
@@ -103,9 +108,11 @@ async def start_stream(chat_id: str, text: str = Form(...), chat_title: str = Fo
     if chat_title == "New Chat":
         chat_title = text[:100]
 
+    logger.info(f"Created new message {message_id} with chat_id {chat_id} and chat_title {chat_title}")
+
     message = {"chat_id": chat_id, "chat_title": chat_title, "message_id": message_id, "text": text}
     response_queue_name = create_response_queue(message_id)
-    logger.info(f"Created unique response queue {response_queue_name} for chat_id {chat_id} and message_id {message_id}")
+    logger.info(f"Created unique response queue {response_queue_name} for chat_id {chat_id}, chat_title {chat_title} and message_id {message_id}")
     logger.info(f"Sending message {message_id} to request_queue")
     send_message_to_request_queue(message_id, message)
     logger.info(f"Sent message to request_queue: {message}")

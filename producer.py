@@ -7,6 +7,11 @@ import string
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+# Get the logger for the pika package and set its level to WARNING
+pika_logger = logging.getLogger('pika')
+pika_logger.setLevel(logging.WARNING)
+
 logger = logging.getLogger(__name__)
 
 rabbitmq_url = 'amqp://guest:guest@localhost:5672/%2f'
