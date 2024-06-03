@@ -1,7 +1,7 @@
 # rabbitmq-streaming-example
-Example application using RabbitMQ Stream Plugin (https://www.rabbitmq.com/docs/stream) to stream text to a browser via a FastAPI server, without the browser having direct access to RabbitMQ.
+Example application using RabbitMQ to stream text to a browser via a FastAPI server, without the browser having direct access to RabbitMQ.
 
-This is just basic proof of concept, exploring the Streams feature in RabbitMQ. Further thought should be given to concurrent requests and how they should be handled. In the case of this application we are creating a unique response queue for each requests that gets automatically deleted after 10 minutes by RabbitMQ.
+This is just basic proof of concept, exploring RabbitMQ. Further thought should be given to concurrent requests and how they should be handled. In the case of this application we are creating a unique response queue for each requests that gets automatically deleted after 10 minutes by RabbitMQ.
 
 A Python Rest API using FastAPI app (`app.py`) is exposed for a simple static webpage `static/index.html` to invoke.
 
